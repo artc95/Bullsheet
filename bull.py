@@ -4,6 +4,7 @@ import base64
 import hmac
 import hashlib
 import datetime, time
+import pandas as pd
 
 nonce = int(round(time.time()*1000))
 
@@ -13,8 +14,8 @@ url = 'https://api.sandbox.gemini.com/v1/mytrades'
 #build the dict payload object
 payload = {
 	'request':'/v1/mytrades',
-        'nonce': nonce,
-	'symbol': "btcusd"
+    'nonce': nonce,
+	'symbol': ["btcusd", "ethusd"]
 }
 
 #endcode payload as a json object for hashing
@@ -35,6 +36,37 @@ headers = {
 }
 
 #retrieve data from POST request as response
-response = requests.request("POST", url, headers=headers)
+r = requests.request("POST", url, headers=headers)
 
-print(response.text)
+trades = r.json()
+
+timestampms = []
+buysell = []
+symbol = []
+currency = []
+price = []
+qty = []
+value = []
+
+for trade in trades:
+    timestampms.append(trade["timestampms"])
+    buysell.append(trade["type"])
+    symbol.append(trade["symbol"])
+    currency.append(trade["fee_currency"])
+    price.append(trade["price"])
+    qty.append(trade["amount"])
+    value.append(float(trade["fee_amount"])/0.007)
+
+trades_dict = {
+    "timestamp_ms": timestampms,
+    "buysell": buysell,
+    "symbol": symbol,
+    "currency": currency,
+    "price": price,
+    "qty": qty,
+    "value": value
+}
+
+trades_df = pd.DataFrame(trades_dict, columns = ["timestamp_ms", "buysell", "symbol", "currency", "price", "qty", "value"])
+
+print(trades_df)
