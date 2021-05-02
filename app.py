@@ -11,7 +11,7 @@ server = app.server
 
 # assume you have a "long-form" data frame
 # see https://plotly.com/python/px-arguments/ for more options
-df = pd.read_csv("https://github.com/artc95/Bullsheet/blob/master/trades.csv")
+df = pd.read_csv("https://raw.githubusercontent.com/artc95/Bullsheet/master/trades.csv")
 
 def generate_table(dataframe):
     return html.Table([
