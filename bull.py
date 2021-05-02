@@ -49,7 +49,9 @@ qty = []
 value = []
 
 for trade in trades:
-    timestampms.append(trade["timestampms"])
+    timestamp_epoch = trade["timestampms"]/1000
+    timestampms.append(datetime.datetime.fromtimestamp(timestamp_epoch).strftime("%d%m%y %H%M%S.%f"))
+    
     buysell.append(trade["type"])
     symbol.append(trade["symbol"])
     currency.append(trade["fee_currency"])
@@ -58,7 +60,7 @@ for trade in trades:
     value.append(float(trade["fee_amount"])/0.01)
 
 trades_dict = {
-    "timestamp_ms": timestampms,
+    "timestamp_ddmmyy HHMMSS.f": timestampms,
     "buysell": buysell,
     "symbol": symbol,
     "currency": currency,
@@ -67,6 +69,8 @@ trades_dict = {
     "value": value
 }
 
-trades_df = pd.DataFrame(trades_dict, columns = ["timestamp_ms", "buysell", "symbol", "currency", "price", "qty", "value"])
+trades_df = pd.DataFrame(trades_dict, columns = ["timestamp_ddmmyy HHMMSS.f", "buysell", "symbol", "currency", "price", "qty", "value"])
 
-print(trades_df)
+# save df as csv
+csv_name = "trades.csv"
+csv_file = trades_df.to_csv(csv_name, index=False)
