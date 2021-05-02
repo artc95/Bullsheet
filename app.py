@@ -11,25 +11,23 @@ server = app.server
 
 # assume you have a "long-form" data frame
 # see https://plotly.com/python/px-arguments/ for more options
-df = pd.DataFrame({
-    "Fruit": ["Apples", "Oranges", "Bananas", "Apples", "Oranges", "Bananas"],
-    "Amount": [4, 1, 2, 2, 4, 5],
-    "City": ["SF", "SF", "SF", "Montreal", "Montreal", "Montreal"]
-})
+df = pd.read_csv("https://github.com/artc95/Bullsheet/blob/master/trades.csv")
 
-fig = px.bar(df, x="Fruit", y="Amount", color="City", barmode="group")
+def generate_table(dataframe):
+    return html.Table([
+        html.Thead(
+            html.Tr([html.Th(col) for col in dataframe.columns])
+        ),
+        html.Tbody([
+            html.Tr([
+                html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
+            ]) for i in range(len(dataframe))
+        ])
+    ])
 
 app.layout = html.Div(children=[
-    html.H1(children='Hello Dash'),
-
-    html.Div(children='''
-        Dash: A web application framework for Python.
-    '''),
-
-    dcc.Graph(
-        id='example-graph',
-        figure=fig
-    )
+    html.H1(children='Trades'),
+    generate_table(df)
 ])
 
 if __name__ == '__main__':
