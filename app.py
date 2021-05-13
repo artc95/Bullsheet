@@ -13,7 +13,7 @@ server = app.server
 
 # assume you have a "long-form" data frame
 # see https://plotly.com/python/px-arguments/ for more options
-df = pd.read_csv("https://raw.githubusercontent.com/artc95/Bullsheet/master/trades.csv")
+df = pd.read_csv("https://raw.githubusercontent.com/artc95/Bullsheet/master/net.csv")
 
 app.layout = html.Div([
     dash_table.DataTable(
