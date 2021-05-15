@@ -15,7 +15,7 @@
 
 <h2>Create Cloud Function to update BigQuery table with new file written in Cloud Storage Bucket</h2>
 - Loading csv data from Cloud Storage into BigQuery https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv<br/>
-- Add requirements.txt file with necessary dependencies e.g. google-cloud-bigquery==2.16.1
+- Add requirements.txt file with necessary dependencies e.g. google-cloud-bigquery==2.16.1<br/>
   ------------------------------------------
 
 <h1>Python Dash App on Heroku<h1>
