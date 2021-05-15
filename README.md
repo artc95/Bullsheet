@@ -11,7 +11,10 @@
 - Create Bucket in us-central1 for Free Tier (https://cloud.google.com/free/docs/gcp-free-tier/#storage)
 
 <h2>Create Dataset and Load Table in BigQuery</h2>
-- Create Dataset and Table in data location US to access Cloud Storage Bucket in us-central1
+- Create Dataset and Table in data location US to access Cloud Storage Bucket in us-central1<br/>
+
+<h2>Create Cloud Function to update BigQuery table with new file written in Cloud Storage Bucket</h2>
+- Loading csv data from Cloud Storage into BigQuery https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv<br/>
   ------------------------------------------
 
 <h1>Python Dash App on Heroku<h1>
