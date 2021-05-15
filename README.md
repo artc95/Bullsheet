@@ -1,10 +1,9 @@
-<pre>
 <h1>Python on Google Cloud Platform (Compute Engine, Cloud Storage, BigQuery), Google Data Studio</h1>
 - How to automate financial data collection with Python using APIs and Google Cloud https://towardsdatascience.com/how-to-automate-financial-data-collection-with-python-using-tiingo-api-and-google-cloud-platform-b11d8c9afaa1
 
 <h2>Create VM Instance on Compute Engine</h2>
 - Create VM instance, for Free Tier (https://cloud.google.com/free/docs/gcp-free-tier/#compute) use:<br/>
-  - Machine Type = f1-micro<br/>
+&nbsp; - Machine Type = f1-micro<br/>
   - Zone = us-central1-a<br/>
 - SSH into VM instance, upload Python script (using Options button at top-right-hand corner), run "sudo apt-get install python3-pip" to install Python dependencies (see 4th answer https://stackoverflow.com/questions/45188725/how-do-i-install-pip-modules-on-google-compute-engine)
   ------------------------------------------
@@ -22,4 +21,3 @@
 
 <h2>TBC: Deploy Dash app using Google App Engine</h2>
 https://realpython.com/python-web-applications/
-</pre>
