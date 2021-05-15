@@ -1,3 +1,4 @@
+<pre>
 <h1>Python on Google Cloud Platform (Compute Engine, Cloud Storage, BigQuery), Google Data Studio</h1>
 - How to automate financial data collection with Python using APIs and Google Cloud https://towardsdatascience.com/how-to-automate-financial-data-collection-with-python-using-tiingo-api-and-google-cloud-platform-b11d8c9afaa1
 
@@ -21,3 +22,4 @@
 
 <h2>TBC: Deploy Dash app using Google App Engine</h2>
 https://realpython.com/python-web-applications/
+</pre>
