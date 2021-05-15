@@ -9,7 +9,7 @@
   ------------------------------------------
 
 <h1>Python Dash App on Heroku<h1>
-  <h2>Write simple Dash app</h2>
+<h2>Write simple Dash app</h2>
 - tutorial at https://dash.plotly.com/installation
 
 <h2>Deploy Dash app using Heroku</h2>
