@@ -147,3 +147,14 @@ net_df = pd.DataFrame(net_dict, columns = ["timestamp_ddmmyy HHMMSS", "symbol", 
 
 # save df as csv
 csv_file = net_df.to_csv("net.csv", index=False)
+
+#-----UPLOAD NET.CSV TO GOOGLE CLOUD STORAGE-----#
+# run on Google Compute Engine VM instance with dependency installed using "pip3 install --upgrade google-cloud-storage"
+from google.cloud import storage
+
+storage_client = storage.Client()
+bucket = storage_client.bucket("bullsheet")
+blob = bucket.blob("net.csv")
+blob.upload_from_filename("/home/arthur95chionh/net.csv")
+
+print("Uploaded net.csv!")
