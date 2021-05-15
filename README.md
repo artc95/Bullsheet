@@ -3,9 +3,10 @@
 
 <h2>Create VM Instance on Compute Engine</h2>
 - Use Machine Type f1-micro, Zone us-central1-a for Free Tier (https://cloud.google.com/free/docs/gcp-free-tier/#compute)
------------------------------------
+  ------------------------------------------
+
 <h1>Python Dash App on Heroku<h1>
-<h2>Write simple Dash app</h2>
+  <h2>Write simple Dash app</h2>
 - tutorial at https://dash.plotly.com/installation
 
 <h2>Deploy Dash app using Heroku</h2>
