@@ -5,7 +5,7 @@
 - Create VM instance, for Free Tier (https://cloud.google.com/free/docs/gcp-free-tier/#compute) use:<br/>
 &nbsp; - Machine Type = f1-micro<br/>
 &nbsp; - Zone = us-central1-a<br/>
-- SSH into VM instance, upload Python script (using Options button at top-right-hand corner), run "sudo apt-get install python3-pip" to install pip (see 4th answer https://stackoverflow.com/questions/45188725/how-do-i-install-pip-modules-on-google-compute-engine), run "pip3 install DEPENDENCY" to install dependencies for Python script e.g. "pip3 install requests", "pip3 install pandas", "pip install --upgrade google-cloud-storage"<br/>
+- SSH into VM instance, upload Python script (using Options button at top-right-hand corner), run "sudo apt-get install python3-pip" to install pip (see 4th answer https://stackoverflow.com/questions/45188725/how-do-i-install-pip-modules-on-google-compute-engine), run "pip3 install DEPENDENCY" to install dependencies for Python script e.g. "pip3 install requests", "pip3 install pandas", "pip3 install --upgrade google-cloud-storage"<br/>
   ------------------------------------------
 
 <h1>Python Dash App on Heroku<h1>
