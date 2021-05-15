@@ -2,7 +2,10 @@
 - How to automate financial data collection with Python using APIs and Google Cloud https://towardsdatascience.com/how-to-automate-financial-data-collection-with-python-using-tiingo-api-and-google-cloud-platform-b11d8c9afaa1
 
 <h2>Create VM Instance on Compute Engine</h2>
-- Use Machine Type f1-micro, Zone us-central1-a for Free Tier (https://cloud.google.com/free/docs/gcp-free-tier/#compute)
+- Create VM instance, for Free Tier (https://cloud.google.com/free/docs/gcp-free-tier/#compute) use: 
+  - Machine Type = f1-micro
+  - Zone = us-central1-a
+- SSH into VM instance, upload Python script (using Options button at top-right-hand corner), run "sudo apt-get install python3-pip" to install Python dependencies (see 4th answer https://stackoverflow.com/questions/45188725/how-do-i-install-pip-modules-on-google-compute-engine)
   ------------------------------------------
 
 <h1>Python Dash App on Heroku<h1>
