@@ -1,5 +1,5 @@
 <h1>Python on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Functions, BigQuery), Google Data Studio</h1>
-![Image of Bullsheet_DAG](https://github.com/artc95/Bullsheet/blob/master/Bullsheet_DAG.PNG)<br/>
+![Image of Bullsheet_DAG](Bullsheet_DAG.PNG)<br/>
 - How to automate financial data collection with Python using APIs and Google Cloud https://towardsdatascience.com/how-to-automate-financial-data-collection-with-python-using-tiingo-api-and-google-cloud-platform-b11d8c9afaa1
 
 <h2>Create VM Instance in Compute Engine</h2>
