@@ -1,3 +1,5 @@
+import os
+import csv
 import requests
 import json
 import base64
@@ -9,35 +11,43 @@ import pandas as pd
 #-----GET PAST TRADES FROM GEMINI API-----#
 # documentation at https://docs.gemini.com/rest-api/#get-past-trades
 
+# PAYLOAD - nonce
 nonce = int(round(time.time()*1000))
 
-#sandbox api endpoint
-url = 'https://api.gemini.com/v1/mytrades'
+# PAYLOAD - timestamp
+# check if trades.csv already exists
+trades_exists = os.path.exists("trades.csv") # https://www.guru99.com/python-check-if-file-exists.html
+if trades_exists == True: # if exists, get timestamp of latest trade, then query subsequent trades and append
+    existing = pd.read_csv("trades.csv")
+    timestamp = existing.loc[0,"timestamp_ddmmyy HHMMSS"]
+    timestamp = datetime.datetime.strptime(timestamp, "%d%m%y %H%M%S").timestamp()
+else: # if does not exist, query from timestamp when Gemini introduced in Singapore https://medium.com/@winklevoss/gemini-is-expanding-to-hong-kong-and-singapore-42d8b973c433
+    timestamp = datetime.datetime.strptime("2016-10-02 00:00:00", "%Y-%m-%d %H:%M:%S").timestamp()
+print("Querying trades from {} onwards.".format(timestamp))
 
-#build the dict payload object
+# PAYLOAD - build dict object
 payload = {
 	'request':'/v1/mytrades',
     'nonce': nonce,
 	'symbol': ["btcusd", "ethusd"],
     'limit_trades': 500,
-    'timestamp': datetime.datetime.strptime("190421,000000", "%d%m%y,%H%M%S").timestamp() # put datetime from which to search
+    'timestamp': timestamp # put datetime from which to search
 }
 
-#endcode payload as a json object for hashing
+# PAYLOAD - encode as json for hashing
 payload = str.encode(json.dumps(payload))
-
-#base64 encode the payload
+# PAYLOAD - base64 encode the payload
 b64 = base64.b64encode(payload)
 
-#get api key and secret from local .csv file
+# API KEY AND SECRET - read from gem.csv
 gemini_csv = pd.read_csv("gem.csv")
 key = gemini_csv.loc[1,"key"]
 secret = gemini_csv.loc[1,"sec"]
 
-#create the signature using sandbox secret and encoded payload in sha384 hash
+# SIGNATURE - create using SECRET and PAYLOAD encoded as b64
 signature = hmac.new(secret.encode(), b64, hashlib.sha384).hexdigest()
 
-#build headers as required for contacting api endpoint
+# HEADERS - as required for contacting api endpoint
 headers = {
         'Content-Type':'text/plain',
         'Content-Length': "0",
@@ -47,10 +57,12 @@ headers = {
         'Cache-Control': "no-cache"
 }
 
-#retrieve data from POST request as response
+# POST - retrieve data as response
+url = 'https://api.gemini.com/v1/mytrades' # gemini api endpoint
 r = requests.request("POST", url, headers=headers)
 
 trades = r.json()
+print(trades)
 
 #-----PARSE JSON TO CREATE BUY / SELL RECORDS-----#
 
