@@ -1,11 +1,23 @@
-<h1>Python on Google Cloud Platform (Compute Engine, Cloud Storage, BigQuery), Google Data Studio</h1>
+<h1>Python on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Functions, BigQuery), Google Data Studio</h1>
+
+<img src="https://github.com/artc95/Bullsheet/blob/master/Bullsheet_DAG.PNG?raw=true" width="50%" height="50%"><br/>
 - How to automate financial data collection with Python using APIs and Google Cloud https://towardsdatascience.com/how-to-automate-financial-data-collection-with-python-using-tiingo-api-and-google-cloud-platform-b11d8c9afaa1
 
-<h2>Create VM Instance on Compute Engine</h2>
+<h2>Create VM Instance in Compute Engine</h2>
 - Create VM instance, for Free Tier (https://cloud.google.com/free/docs/gcp-free-tier/#compute) use:<br/>
 &nbsp; - Machine Type = f1-micro<br/>
 &nbsp; - Zone = us-central1-a<br/>
 - SSH into VM instance, upload Python script (using Options button at top-right-hand corner), run "sudo apt-get install python3-pip" to install pip (see 4th answer https://stackoverflow.com/questions/45188725/how-do-i-install-pip-modules-on-google-compute-engine), run "pip3 install DEPENDENCY" to install dependencies for Python script e.g. "pip3 install requests", "pip3 install pandas", "pip3 install --upgrade google-cloud-storage"<br/>
+
+<h2>Create Bucket in Cloud Storage</h2>
+- Create Bucket in us-central1 for Free Tier (https://cloud.google.com/free/docs/gcp-free-tier/#storage)
+
+<h2>Create Dataset and Load Table in BigQuery</h2>
+- Create Dataset and Table in data location US to access Cloud Storage Bucket in us-central1<br/>
+
+<h2>Create Cloud Function to update BigQuery table with new file written in Cloud Storage Bucket</h2>
+- Loading csv data from Cloud Storage into BigQuery https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv<br/>
+- Add requirements.txt file with necessary dependencies e.g. google-cloud-bigquery==2.16.1<br/>
   ------------------------------------------
 
 <h1>Python Dash App on Heroku<h1>
