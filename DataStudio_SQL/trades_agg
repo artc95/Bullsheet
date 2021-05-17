@@ -7,21 +7,24 @@
 WITH CTE_agg_buy AS(
     SELECT symbol,
     IF(buysell="Buy",SUM(qty),0) AS buy_qty,
-    IF(buysell ="Buy", SUM(valueUSD)/SUM(qty),0) AS avg_buy_price,
+    IF(buysell ="Buy", SUM(valueUSD)/SUM(qty),0) AS avg_buy_priceUSD,
+  	IF(buysell ="Buy", SUM(valueSGD)/SUM(qty),0) AS avg_buy_priceSGD,
 FROM Bullsheet.trades
 WHERE buysell="Buy"
 GROUP BY symbol,buysell
 ),CTE_agg_sell AS(
     SELECT symbol,buysell,
     IF(buysell="Sell",SUM(qty),0) AS sell_qty,
-    IF(buysell = "Sell", SUM(valueUSD)/SUM(qty),0) AS avg_sell_price
+    IF(buysell = "Sell", SUM(valueUSD)/SUM(qty),0) AS avg_sell_priceUSD,
+  	IF(buysell = "Sell", SUM(valueSGD)/SUM(qty),0) AS avg_sell_priceSGD,
 FROM Bullsheet.trades
 WHERE buysell="Sell"
 GROUP BY symbol, buysell
 )
 
-SELECT BUY.symbol, BUY.buy_qty, BUY.avg_buy_price,
-IFNULL(SELL.sell_qty,0) AS sell_qty, IFNULL(SELL.avg_sell_price,0) AS avg_sell_price,
-(IFNULL(SELL.avg_sell_price,0)-BUY.avg_buy_price)*IFNULL(SELL.sell_qty,0) AS net_profit
+SELECT BUY.symbol, BUY.buy_qty, BUY.avg_buy_priceUSD, BUY.avg_buy_priceSGD,
+IFNULL(SELL.sell_qty,0) AS sell_qty, IFNULL(SELL.avg_sell_priceUSD,0) AS avg_sell_priceUSD, IFNULL(SELL.avg_sell_priceSGD,0) AS avg_sell_priceSGD,
+(IFNULL(SELL.avg_sell_priceUSD,0)-BUY.avg_buy_priceUSD)*IFNULL(SELL.sell_qty,0) AS net_profitUSD,
+(IFNULL(SELL.avg_sell_priceSGD,0)-BUY.avg_buy_priceSGD)*IFNULL(SELL.sell_qty,0) AS net_profitSGD,
 FROM CTE_agg_buy BUY
 LEFT JOIN CTE_agg_sell SELL ON BUY.symbol = SELL.symbol
