@@ -1,8 +1,8 @@
 <h1>Python on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Functions, BigQuery), Google Data Studio</h1><br/>
-<h2>Live at https://datastudio.google.com/reporting/43c0182a-33b4-42ab-823d-3515366f6e90</h2><br/>
-
+- Live at https://datastudio.google.com/reporting/43c0182a-33b4-42ab-823d-3515366f6e90<br/>
+- With reference to "How to automate financial data collection with Python using APIs and Google Cloud https://towardsdatascience.com/how-to-automate-financial-data-collection-with-python-using-tiingo-api-and-google-cloud-platform-b11d8c9afaa1"<br/>
+- DAG: <br/>
 <img src="https://github.com/artc95/Bullsheet/blob/master/Bullsheet_DAG.PNG?raw=true" width="50%" height="50%"><br/>
-- How to automate financial data collection with Python using APIs and Google Cloud https://towardsdatascience.com/how-to-automate-financial-data-collection-with-python-using-tiingo-api-and-google-cloud-platform-b11d8c9afaa1
 
 <h2>Create VM Instance in Compute Engine</h2>
 - Create VM instance, for Free Tier (https://cloud.google.com/free/docs/gcp-free-tier/#compute) use:<br/>
