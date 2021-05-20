@@ -3,7 +3,7 @@ def update_trades(data,context):
     client = bigquery.Client()
     table_ref = client.dataset("Bullsheet").table("trades")
     job_config = bigquery.LoadJobConfig()
-    job_config.write_disposition = bigquery.WriteDisposition.WRITE_APPEND # this job will truncate table data and write from the beginning
+    job_config.write_disposition = bigquery.WriteDisposition.WRITE_APPEND # https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.job.WriteDisposition.html
     job_config.skip_leading_rows = 1
     job_config.source_format = bigquery.SourceFormat.CSV
 
