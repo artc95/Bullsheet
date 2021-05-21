@@ -9,6 +9,7 @@
 &nbsp; - Machine Type = f1-micro<br/>
 &nbsp; - Zone = us-central1-a<br/>
 - SSH into VM instance, upload Python script (using Options button at top-right-hand corner), run "sudo apt-get install python3-pip" to install pip (see 4th answer https://stackoverflow.com/questions/45188725/how-do-i-install-pip-modules-on-google-compute-engine), run "pip3 install DEPENDENCY" to install dependencies for Python script e.g. "pip3 install requests", "pip3 install pandas", "pip3 install --upgrade google-cloud-storage"<br/>
+  - dependencies to query BigQuery (https://stackoverflow.com/questions/56357794/unable-to-install-grpcio-using-pip-install-grpcio): "pip3 install --upgrade pip", "python3 -m pip install --upgrade setuptools", "pip3 install --no-cache-dir  --force-reinstall -Iv grpcio==<version_number>" (get version number from https://pypi.org/project/grpcio/), "pip3 install google-cloud-bigquery", "pip3 install google-cloud-bigquery-storage", "pip3 install pyarrow"<br/>
 
 <h2>Create Bucket in Cloud Storage</h2>
 - Create Bucket in us-central1 for Free Tier (https://cloud.google.com/free/docs/gcp-free-tier/#storage)
