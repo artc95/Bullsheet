@@ -1,13 +1,16 @@
-<h1>Python on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Functions, BigQuery), Google Data Studio</h1>
-
+<h1>Python on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Functions, BigQuery), Google Data Studio</h1><br/>
+- Live at https://datastudio.google.com/reporting/43c0182a-33b4-42ab-823d-3515366f6e90<br/>
+- With reference to "How to automate financial data collection with Python using APIs and Google Cloud https://towardsdatascience.com/how-to-automate-financial-data-collection-with-python-using-tiingo-api-and-google-cloud-platform-b11d8c9afaa1"<br/>
+- DAG: <br/>
 <img src="https://github.com/artc95/Bullsheet/blob/master/Bullsheet_DAG.PNG?raw=true" width="50%" height="50%"><br/>
-- How to automate financial data collection with Python using APIs and Google Cloud https://towardsdatascience.com/how-to-automate-financial-data-collection-with-python-using-tiingo-api-and-google-cloud-platform-b11d8c9afaa1
 
 <h2>Create VM Instance in Compute Engine</h2>
 - Create VM instance, for Free Tier (https://cloud.google.com/free/docs/gcp-free-tier/#compute) use:<br/>
 &nbsp; - Machine Type = f1-micro<br/>
 &nbsp; - Zone = us-central1-a<br/>
 - SSH into VM instance, upload Python script (using Options button at top-right-hand corner), run "sudo apt-get install python3-pip" to install pip (see 4th answer https://stackoverflow.com/questions/45188725/how-do-i-install-pip-modules-on-google-compute-engine), run "pip3 install DEPENDENCY" to install dependencies for Python script e.g. "pip3 install requests", "pip3 install pandas", "pip3 install --upgrade google-cloud-storage"<br/>
+  - dependencies to query BigQuery (https://stackoverflow.com/questions/56357794/unable-to-install-grpcio-using-pip-install-grpcio): "pip3 install --upgrade pip", "python3 -m pip install --upgrade setuptools", "pip3 install --no-cache-dir  --force-reinstall -Iv grpcio==<version_number>" (get version number from https://pypi.org/project/grpcio/), "pip3 install google-cloud-bigquery", "pip3 install google-cloud-bigquery-storage", "pip3 install pyarrow"<br/>
+  - query BigQuery using Python https://cloud.google.com/bigquery/docs/bigquery-storage-python-pandas#pip
 
 <h2>Create Bucket in Cloud Storage</h2>
 - Create Bucket in us-central1 for Free Tier (https://cloud.google.com/free/docs/gcp-free-tier/#storage)
