@@ -9,12 +9,15 @@ import hashlib
 import datetime, time
 import pandas as pd
 from time import time, sleep
+# TO write dictionaries to CSV
+import csv
 # TO upload csv to Cloud Storage
 from google.cloud import storage
 # TO fill dataframe column with NaN
 import numpy as np
-# TO write dictionaries to CSV
-import csv
+# TO convert dictionary as string type to dictionary type https://www.kite.com/python/docs/ast.literal_eval
+import ast
+
 # TO query BigQuery
 # import google.auth
 # from google.cloud import bigquery
@@ -218,7 +221,7 @@ for record in range(len(buys_df)):
     else: # if qty_left is not NaN, it is a record from buys_left.csv, so use the existing qty_left and sells
         buys[timestamp]["qty"] = buys_df.at[record,"qty"]
         buys[timestamp]["qty_left"] = buys_df.at[record,"qty_left"]
-        buys[timestamp]["sells"] = buys_df.at[record,"sells"]
+        buys[timestamp]["sells"] = ast.literal_eval(buys_df.at[record,"sells"]) # must convert dictionary in string type (when saved as CSV) back into dictionary type
         buys[timestamp]["profit"] = buys_df.at[record,"profit"]
     buys[timestamp]["priceUSD"] = buys_df.at[record,"priceUSD"]
     buys[timestamp]["valueUSD"] = buys_df.at[record,"valueUSD"]
