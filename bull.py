@@ -15,6 +15,9 @@ import csv
 from google.cloud import storage
 # TO fill dataframe column with NaN
 import numpy as np
+# TO have exact decimal precision https://realpython.com/python-rounding/#the-decimal-class, https://zetcode.com/python/decimal/
+import decimal
+from decimal import Decimal
 # TO convert dictionary as string type to dictionary type https://www.kite.com/python/docs/ast.literal_eval
 import ast
 
@@ -155,7 +158,7 @@ trades_df = pd.DataFrame(trades_dict, columns = ["timestamp", "buysell", "symbol
 trades_df = trades_df.iloc[::-1].reset_index(drop=True) # reverse order in trades_df such that earliest trade is first
 if len(trades_df) > 0: # if trades_df is not empty
     csv_file = trades_df.to_csv("trades.csv", index=False)
-    print("Parsed {} trades from {} to {}. trades.csv created.".format(len(trades_df), timestamps[0], timestamps[len(trades_df)-1]))
+    print("Parsed {} trades from {} to {}. trades.csv created.".format(len(trades_df), timestamps[len(trades_df)-1], timestamps[0]))
 
 elif len(trades_df) == 0: # if trades_df empty
     print("No trades were parsed.")
@@ -171,7 +174,7 @@ blob.upload_from_filename("/home/arthur95chionh/trades.csv")
 print("Uploaded trades.csv to Cloud Storage bucket 'bullsheet'.")
 
 # # ********** PROCEED FROM TRADES TO BULL **********
-wait = 5
+wait = 3
 while wait:
     print("Proceeding from trades to bull in {}.".format(wait), end="\r")
     sleep(1)
@@ -186,7 +189,7 @@ print("Processing trades_df with latest buys_left.csv.")
 
 # PREPARE TRADES_DF
 trades_df = pd.read_csv("trades.csv")
-trades_df = trades_df.iloc[20:]
+#trades_df = trades_df.iloc[20:]
 
 # trades_df contains both buy and sell transactions, has unnecessary columns like fiat/priceSGD etc., sorts transactions by descending timestamp, and has indices based on total transactions
 # SO filter trades_df based on column "buysell", select certain columns only, sort by ascending timestamp, reset and drop index to iterate
@@ -203,28 +206,33 @@ else: # if buys_left_df is not appended to buys_df, buys_df will not have "qty_l
     buys_df["qty_left"] = np.nan # ...so create a "qty_left" column of NaN values to indicate records in buys_df do not have existing realizations
 
 # PREPARE SEPARATE DICTIONARIES OF RECORDS FOR BUY, SELL
+# qtys from Gemini API are floats that could be fractions without exact decimal precision, so use Decimal class to have exact decimal precision for calculations
+#decimal.getcontext().prec = 5 # set decimal class precision at 5 decimal places
+#decimal.getcontext().rounding = decimal.ROUND_DOWN
+print(decimal.getcontext())
+
 buys = {}
 for record in range(len(buys_df)):
     timestamp = buys_df.at[record,"timestamp"]
     buys[timestamp] = {}
     buys[timestamp]["symbol"] = buys_df.at[record,"symbol"]
     if pd.isna(buys_df.at[record,"qty_left"]): # if qty_left is NaN, it is a record from trades_df, so assign new qty_left and sells
-        if buys_df.at[record,"qty"] >= 0.00001: # qtys from Gemini API don't seem to tally at a certain level of precision...
-            buys[timestamp]["qty"] = round(buys_df.at[record,"qty"],5) # ...so just work at 5 decimals
-            buys[timestamp]["qty_left"] = round(buys_df.at[record,"qty"],5) # track qty to-be-realized
-            buys[timestamp]["sells"] = {} # dictionary to record matched sells' timestamps and qtys realized
-        elif buys_df.at[record,"qty"] < 0.00001: # if qty is negligible...
-            buys[timestamp]["qty"] = buys_df.at[record,"qty"] # ...still record it so overall records still match up...
-            buys[timestamp]["qty_left"] = 0 # ...but don't bother realizing it...
-            buys[timestamp]["sells"] = {"negligible":buys_df.at[record,"qty"]} # ...and record as negligible
+        #if buys_df.at[record,"qty"] >= 0.00001: 
+        buys[timestamp]["qty"] = Decimal(str(buys_df.at[record,"qty"])) # ...so just work at 5 decimals...
+        buys[timestamp]["qty_left"] = Decimal(str(buys_df.at[record,"qty"])) # track qty to-be-realized, use Decimal class for decimal place precision
+        buys[timestamp]["sells"] = {} # dictionary to record matched sells' timestamps and qtys realized
+        #elif buys_df.at[record,"qty"] < 0.00001: # if qty is negligible...
+            #buys[timestamp]["qty"] = buys_df.at[record,"qty"] # ...still record it so overall records still match up...
+            #buys[timestamp]["qty_left"] = 0 # ...but don't bother realizing it...
+            #buys[timestamp]["sells"] = {"negligible":buys_df.at[record,"qty"]} # ...and record as negligible
         buys[timestamp]["profit"] = 0 # to record profit
     else: # if qty_left is not NaN, it is a record from buys_left.csv, so use the existing qty_left and sells
-        buys[timestamp]["qty"] = buys_df.at[record,"qty"]
-        buys[timestamp]["qty_left"] = buys_df.at[record,"qty_left"]
+        buys[timestamp]["qty"] = Decimal(str(buys_df.at[record,"qty"]))
+        buys[timestamp]["qty_left"] = Decimal(str(buys_df.at[record,"qty_left"]))
         buys[timestamp]["sells"] = ast.literal_eval(buys_df.at[record,"sells"]) # must convert dictionary in string type (when saved as CSV) back into dictionary type
         buys[timestamp]["profit"] = buys_df.at[record,"profit"]
     buys[timestamp]["priceUSD"] = buys_df.at[record,"priceUSD"]
-    buys[timestamp]["valueUSD"] = buys_df.at[record,"valueUSD"]
+    buys[timestamp]["valueUSD"] = Decimal(str(buys_df.at[record,"valueUSD"]))
     buys[timestamp]["exchange"] = buys_df.at[record,"exchange"]
     
 sells = {}
@@ -232,54 +240,54 @@ for record in range(len(sells_df)):
     timestamp = sells_df.at[record,"timestamp"]
     sells[timestamp] = {}
     sells[timestamp]["symbol"] = sells_df.at[record,"symbol"]
-    if sells_df.at[record,"qty"]  >= 0.00001: # qtys from Gemini API don't seem to tally at a certain level of precision...
-        sells[timestamp]["qty"] = round(sells_df.at[record,"qty"],5) # ...so just work at 5 decimals
-        sells[timestamp]["qty_left"] = round(sells_df.at[record,"qty"],5) # track qty to-be-realized
-        sells[timestamp]["buys"] = {} # dictionary to record matched sells' timestamps and qtys realized
-    elif sells_df.at[record,"qty"]  < 0.00001: # if qty is negligible...
-        sells[timestamp]["qty"] = sells_df.at[record,"qty"] # ...still record it so overall records still match up...
-        sells[timestamp]["qty_left"] = 0 # ...but don't bother realizing it...
-        sells[timestamp]["buys"] = {"negligible":sells_df.at[record,"qty"]} # ...and record as negligible
+    #if sells_df.at[record,"qty"]  >= 0.00001: # logic explanation similar to that for buys dictionary
+    sells[timestamp]["qty"] = Decimal(str(sells_df.at[record,"qty"]))
+    sells[timestamp]["qty_left"] = Decimal(str(sells_df.at[record,"qty"]))
+    sells[timestamp]["buys"] = {} # dictionary to record matched sells' timestamps and qtys realized
+    #elif sells_df.at[record,"qty"]  < 0.00001: # if qty is negligible...
+        #sells[timestamp]["qty"] = sells_df.at[record,"qty"] # ...still record it so overall records still match up...
+        #sells[timestamp]["qty_left"] = 0 # ...but don't bother realizing it...
+        #sells[timestamp]["buys"] = {"negligible":sells_df.at[record,"qty"]} # ...and record as negligible
     sells[timestamp]["profit"] = 0 # to record profit
     sells[timestamp]["priceUSD"] = sells_df.at[record,"priceUSD"]
-    sells[timestamp]["valueUSD"] = sells_df.at[record,"valueUSD"]
+    sells[timestamp]["valueUSD"] = Decimal(str(sells_df.at[record,"valueUSD"]))
     sells[timestamp]["exchange"] = sells_df.at[record,"exchange"]
 
 #-----REALIZE SELL TRANSACTIONS-----#
 
-for sell_timestamp, sell_info in sells.items():
-    sell_valuePERqty = sell_info["valueUSD"]/sell_info["qty"] # to calculate profit with buy_valuePERqty (below)
+for sell_timestamp, sell_info in sells.items(): # use Decimal class to have exact decimal place precision
+    sell_valuePERqty = Decimal(str(sell_info["valueUSD"]))/Decimal(str(sell_info["qty"])) # to calculate profit with buy_valuePERqty (below)
     sell_profit = 0 # variable to record profit
     
-    while sell_info["qty_left"] > 0: # generate "buylist" of eligible buy transactions to realize qty of sell transaction until all realized
+    while Decimal(str(sell_info["qty_left"])) > 0: # generate "buylist" of eligible buy transactions to realize qty of sell transaction until all realized
         print("""\n{} SELL of {} @ USD {}
 Qty Left: {}""".format(sell_timestamp, sell_info["symbol"], sell_info["priceUSD"], sell_info["qty_left"]))
         print("""\nBUYLIST:
-ID |       TIMESTAMP      | PRICEUSD  | PROFIT  | IF QTY REALIZED""") # header of buys "hitlist", "NET_QTY (S-B)" column indicates if sell or buy transaction has more qty left (i.e. which qty to choose)
+ID  |       TIMESTAMP      | PRICEUSD  | PROFIT  | IF QTY REALIZED""") # header of buys "hitlist", "NET_QTY (S-B)" column indicates if sell or buy transaction has more qty left (i.e. which qty to choose)
         buylist = {} # create dictionary of buylist ID and timestamp for user to select ID, which is easier than selecting timestamp
         buylist_id = 0
         for buy_timestamp, buy_info in buys.items(): # print out hitlist of buy transactions that occurred before the sell transaction AND same symbol AND still has qty left
-            buy_valuePERqty = buys[buy_timestamp]["valueUSD"]/buys[buy_timestamp]["qty"] # to calculate profit with sell_valuePERqty (above)
+            buy_valuePERqty = Decimal(str(buys[buy_timestamp]["valueUSD"]))/Decimal(str(buys[buy_timestamp]["qty"])) # to calculate profit with sell_valuePERqty (above)
             
             if buy_timestamp < sell_timestamp and sell_info["symbol"] == buy_info["symbol"] and buy_info["qty_left"] > 0 and (sell_info["qty_left"]-buy_info["qty_left"]) >= 0: # if buy qty_left can be fully realized, let user choose buy qty_left:
-                print("{}  |  {} |  {:.2f}  |  {}   | {}".format(buylist_id, buy_timestamp, round(buy_info["priceUSD"],2), round((sell_valuePERqty-buy_valuePERqty)*buy_info["qty_left"],2), buy_info["qty_left"])) # profit calculated by (difference in value/qty) * qty realized
+                print("{:02d}  |  {} |  {:.2f}  |  {}   | {}".format(buylist_id, buy_timestamp, round(buy_info["priceUSD"],2), round((sell_valuePERqty-buy_valuePERqty)*Decimal(str(buy_info["qty_left"])),2), buy_info["qty_left"])) # profit calculated by (difference in value/qty) * qty realized
                 buylist[buylist_id] = {}  # associate buy_timestamp and buy_info["qty_left"] with current buylist_id
                 buylist[buylist_id]["timestamp"] = buy_timestamp
-                buylist[buylist_id]["qty_left"] = buy_info["qty_left"]
+                buylist[buylist_id]["qty_left"] = Decimal(str(buy_info["qty_left"]))
                 buylist_id += 1 # prepare next buylist_id
                 
             elif buy_timestamp < sell_timestamp and sell_info["symbol"] == buy_info["symbol"] and buy_info["qty_left"] > 0 and (sell_info["qty_left"]-buy_info["qty_left"]) < 0: # elif buy qty_left cannot be fully realized, let user choose sell qty_left
-                print("{}  |  {} |  {:.2f}  |  {}   | {} (maximum sell qty_left)".format(buylist_id, buy_timestamp, round(buy_info["priceUSD"],2), round((sell_valuePERqty-buy_valuePERqty)*buy_info["qty_left"],2), sell_info["qty_left"])) # profit calculated by (difference in value/qty) * qty realized
+                print("{:02d}  |  {} |  {:.2f}  |  {}   | {} (maximum sell qty_left)".format(buylist_id, buy_timestamp, round(buy_info["priceUSD"],2), round((sell_valuePERqty-buy_valuePERqty)*Decimal(str(buy_info["qty_left"])),2), sell_info["qty_left"])) # profit calculated by (difference in value/qty) * qty realized
                 buylist[buylist_id] = {}  # associate buy_timestamp and sell_info["qty_left"] with current buylist_id
                 buylist[buylist_id]["timestamp"] = buy_timestamp
-                buylist[buylist_id]["qty_left"] = sell_info["qty_left"]
+                buylist[buylist_id]["qty_left"] = Decimal(str(sell_info["qty_left"]))
                 buylist_id += 1 # prepare next buylist_id
 
         # let user choose which ID and what qty to realize, with input validation
         try:
             chosen_id = int(input("\nInput ID of buy transaction and qty to be realized: "))
             chosen_timestamp = buylist[chosen_id]["timestamp"]
-            chosen_qty = buylist[chosen_id]["qty_left"]
+            chosen_qty = Decimal(str(buylist[chosen_id]["qty_left"]))
         except ValueError: # let users reselect ID if they fail to input integer
             print("\nERROR! Please input integer. Try again (:")
             print("--------------------------------------------------------------")
@@ -304,20 +312,20 @@ ID |       TIMESTAMP      | PRICEUSD  | PROFIT  | IF QTY REALIZED""") # header o
         print("--------------------------------------------------------------")
 
         # realize qtys
-        sell_info["qty_left"] = sell_info["qty_left"] - chosen_qty
-        buys[chosen_timestamp]["qty_left"] = buys[chosen_timestamp]["qty_left"] - chosen_qty
+        sell_info["qty_left"] = Decimal(str(sell_info["qty_left"])) - Decimal(str(chosen_qty))
+        buys[chosen_timestamp]["qty_left"] = Decimal(str(buys[chosen_timestamp]["qty_left"])) - Decimal(str(chosen_qty))
 
         # record transactions used to realize
         # if timestamp already exists in buys/sells dictionary, add qty instead of overwriting previous realized qty(s)
         if chosen_timestamp not in sell_info["buys"]:
-            sell_info["buys"][chosen_timestamp] = chosen_qty
+            sell_info["buys"][chosen_timestamp] = Decimal(str(chosen_qty))
         else:
-            sell_info["buys"][chosen_timestamp] += chosen_qty
+            sell_info["buys"][chosen_timestamp] += Decimal(str(chosen_qty))
         
         if sell_timestamp not in buys[chosen_timestamp]["sells"]:
-            buys[chosen_timestamp]["sells"][sell_timestamp] = chosen_qty
+            buys[chosen_timestamp]["sells"][sell_timestamp] = Decimal(str(chosen_qty))
         else:
-            buys[chosen_timestamp]["sells"][sell_timestamp] += chosen_qty
+            buys[chosen_timestamp]["sells"][sell_timestamp] += Decimal(str(chosen_qty))
 
         # record profit
         # profit calculated by (difference in value/qty) * qty realized
