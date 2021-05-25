@@ -1,4 +1,4 @@
-# query Gemini API
+# TO query Gemini API and parse
 import os
 import csv
 import requests
@@ -9,12 +9,16 @@ import hashlib
 import datetime, time
 import pandas as pd
 from time import time, sleep
-# trades
+# TO upload csv to Cloud Storage
 from google.cloud import storage
-# bull
-import google.auth
-from google.cloud import bigquery
-from google.cloud import bigquery_storage
+# TO fill dataframe column with NaN
+import numpy as np
+# TO write dictionaries to CSV
+import csv
+# TO query BigQuery
+# import google.auth
+# from google.cloud import bigquery
+# from google.cloud import bigquery_storage
 
 #-----GET PAST TRADES FROM GEMINI API-----#
 # documentation at https://docs.gemini.com/rest-api/#get-past-trades
@@ -27,7 +31,7 @@ nonce = int(round(time()*1000))
 trades_exists = os.path.exists("trades.csv") # https://www.guru99.com/python-check-if-file-exists.html
 if trades_exists == True: # if exists, get timestamp of latest trade, then query subsequent trades and append
     existing = pd.read_csv("trades.csv")
-    timestamp = existing.loc[0,"timestamp"]
+    timestamp = existing.loc[len(existing)-1,"timestamp"]
     timestamp = datetime.datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S").timestamp() + 1 # add one second to timestamp to search for trades after and excluding last trade queried
 else: # if does not exist, query from timestamp when Gemini introduced in Singapore https://medium.com/@winklevoss/gemini-is-expanding-to-hong-kong-and-singapore-42d8b973c433
     timestamp = datetime.datetime.strptime("2016-10-02 00:00:00", "%Y-%m-%d %H:%M:%S").timestamp()
@@ -84,12 +88,14 @@ pricesSGD = []
 pricesUSD = []
 valuesSGD = []
 valuesUSD = []
+exchanges = []
 
 for trade in trades_df: # parse json
     timestamps.append(datetime.datetime.fromtimestamp(trade["timestamp"]).strftime("%Y-%m-%d %H:%M:%S")) # BigQuery needs timestamp in "%Y-%m-%d %H:%M:%S" format https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv
     buysell.append(trade["type"])
     symbols.append(trade["symbol"][:-3]) # e.g. LINKUSD, where before last 3 alphabets are symbol, last 3 alphabets are fiat 
     fiats.append(trade["symbol"][-3:])
+    exchanges.append(trade["exchange"])
     qtys.append(float(trade["amount"]))
     
     # aggressor True = Taker = Fees 0.35%, aggressor False = Maker = Fees 0.25%
@@ -138,16 +144,21 @@ trades_dict = {
     "priceSGD": pricesSGD,
     "priceUSD": pricesUSD,
     "valueSGD": valuesSGD,
-    "valueUSD": valuesUSD
+    "valueUSD": valuesUSD,
+    "exchange": exchanges
 }
 
-trades_df = pd.DataFrame(trades_dict, columns = ["timestamp", "buysell", "symbol", "fiat", "qty", "fee_rate", "priceSGD", "priceUSD", "valueSGD", "valueUSD"])
-# TRY AGGREGATION FUNCTIONS https://stackoverflow.com/questions/46826773/how-can-i-merge-rows-by-same-value-in-a-column-in-pandas-with-aggregation-func
-csv_file = trades_df.to_csv("trades.csv", index=False)
-print("Parsed {} trades from {} to {}. trades.csv created.".format(len(trades_df),timestamps[len(trades_df)-1],timestamps[0]))
+trades_df = pd.DataFrame(trades_dict, columns = ["timestamp", "buysell", "symbol", "fiat", "qty", "fee_rate", "priceSGD", "priceUSD", "valueSGD", "valueUSD", "exchange"])
+trades_df = trades_df.iloc[::-1].reset_index(drop=True) # reverse order in trades_df such that earliest trade is first
+if len(trades_df) > 0: # if trades_df is not empty
+    csv_file = trades_df.to_csv("trades.csv", index=False)
+    print("Parsed {} trades from {} to {}. trades.csv created.".format(len(trades_df), timestamps[0], timestamps[len(trades_df)-1]))
 
-#-----UPLOAD TRADES.CSV TO GOOGLE CLOUD STORAGE-----#
-# run on Google Compute Engine VM instance with dependency installed using "pip3 install --upgrade google-cloud-storage"
+elif len(trades_df) == 0: # if trades_df empty
+    print("No trades were parsed.")
+
+# #-----UPLOAD TRADES.CSV TO GOOGLE CLOUD STORAGE-----#
+# # run on Google Compute Engine VM instance with dependency installed using "pip3 install --upgrade google-cloud-storage"
 
 storage_client = storage.Client()
 bucket = storage_client.bucket("bullsheet")
@@ -156,136 +167,255 @@ blob.upload_from_filename("/home/arthur95chionh/trades.csv")
 
 print("Uploaded trades.csv to Cloud Storage bucket 'bullsheet'.")
 
-# ********** PROCEED FROM TRADES TO BULL **********
+# # ********** PROCEED FROM TRADES TO BULL **********
 wait = 5
 while wait:
     print("Proceeding from trades to bull in {}.".format(wait), end="\r")
     sleep(1)
     wait -= 1
-print("Combining existing bull.csv with trades_df to update bull.csv.")
+print("Processing trades_df with latest buys_left.csv.")
 
-# *************************************************
+# # *************************************************
 
-#-----COMBINE BULL.CSV (IF ANY) WITH TRADES_DF (LATEST TRANSACTIONS ONLY, INSTEAD OF BQ TABLE "TRADES") -----#
+#----- COMBINE TRADES_DF WITH BUYS_LEFT.CSV (IF ANY) (USE TRADES_DF BECAUSE LATEST TRANSACTIONS ONLY, INSTEAD OF QUERYING ALL HISTORICAL TRADES IN BQ TABLE "TRADES") -----#
 
-# create lists to track Buy and Sell transactions
-B_timestamps = []
-B_symbols = []
-B_qtys = []
-B_pricesUSD = []
-B_valuesUSD = []
+#-----PREPARE TRADES_DF, BUYS_LEFT-----#
 
-S_timestamps = []
-S_symbols = []
-S_qtys = []
-S_pricesUSD = []
-S_valuesUSD = []
+# PREPARE TRADES_DF
+trades_df = pd.read_csv("trades.csv")
+trades_df = trades_df.iloc[20:]
 
-profitUSD = 0 # variable to track Profit
+# trades_df contains both buy and sell transactions, has unnecessary columns like fiat/priceSGD etc., sorts transactions by descending timestamp, and has indices based on total transactions
+# SO filter trades_df based on column "buysell", select certain columns only, sort by ascending timestamp, reset and drop index to iterate
+buys_df = trades_df[trades_df["buysell"]=="Buy"][["timestamp","symbol","qty","priceUSD","valueUSD", "exchange"]].reset_index(drop=True) 
+sells_df = trades_df[trades_df["buysell"]=="Sell"][["timestamp","symbol","qty","priceUSD","valueUSD", "exchange"]].reset_index(drop=True)
 
-# check if bull.csv exists
-bull_exists = os.path.exists("bull.csv")
+# PREPARE BUYS_LEFT_DF (CHECK IF BUYS_LEFT.CSV EXISTS)
+# check if buys_left.csv already exists
+buys_left_exists = os.path.exists("buys_left.csv")
+if buys_left_exists == True: # if exists, # combine buys from buys_left_df with buys in trade_df (now in buys_df)
+    buys_left_df = pd.read_csv("buys_left.csv")
+    buys_df = buys_df.append(buys_left_df, ignore_index=True).sort_values(by="priceUSD",ascending=False).reset_index(drop=True) # sort by priceUSD descending, for display when choosing which buys to realize
+else: # if buys_left_df is not appended to buys_df, buys_df will not have "qty_left" column...
+    buys_df["qty_left"] = np.nan # ...so create a "qty_left" column of NaN values to indicate records in buys_df do not have existing realizations
 
-if bull_exists == True:  # if bull.csv exists then append its Buy transactions
-    bull_df = pd.read_csv("bull.csv")
-    for row in range(len(bull_df)):
-            B_timestamps.append(bull_df.at[row,"timestamp"])
-            B_symbols.append(bull_df.at[row,"symbol"])
-            B_qtys.append(bull_df.at[row,"qty"])
-            B_pricesUSD.append(bull_df.at[row,"priceUSD"])
-            B_valuesUSD.append(bull_df.at[row,"valueUSD"])
-else: pass
+# PREPARE SEPARATE DICTIONARIES OF RECORDS FOR BUY, SELL
+buys = {}
+for record in range(len(buys_df)):
+    timestamp = buys_df.at[record,"timestamp"]
+    buys[timestamp] = {}
+    buys[timestamp]["symbol"] = buys_df.at[record,"symbol"]
+    if pd.isna(buys_df.at[record,"qty_left"]): # if qty_left is NaN, it is a record from trades_df, so assign new qty_left and sells
+        if buys_df.at[record,"qty"] >= 0.00001: # qtys from Gemini API don't seem to tally at a certain level of precision...
+            buys[timestamp]["qty"] = round(buys_df.at[record,"qty"],5) # ...so just work at 5 decimals
+            buys[timestamp]["qty_left"] = round(buys_df.at[record,"qty"],5) # track qty to-be-realized
+            buys[timestamp]["sells"] = {} # dictionary to record matched sells' timestamps and qtys realized
+        elif buys_df.at[record,"qty"] < 0.00001: # if qty is negligible...
+            buys[timestamp]["qty"] = buys_df.at[record,"qty"] # ...still record it so overall records still match up...
+            buys[timestamp]["qty_left"] = 0 # ...but don't bother realizing it...
+            buys[timestamp]["sells"] = {"negligible":buys_df.at[record,"qty"]} # ...and record as negligible
+        buys[timestamp]["profit"] = 0 # to record profit
+    else: # if qty_left is not NaN, it is a record from buys_left.csv, so use the existing qty_left and sells
+        buys[timestamp]["qty"] = buys_df.at[record,"qty"]
+        buys[timestamp]["qty_left"] = buys_df.at[record,"qty_left"]
+        buys[timestamp]["sells"] = buys_df.at[record,"sells"]
+        buys[timestamp]["profit"] = buys_df.at[record,"profit"]
+    buys[timestamp]["priceUSD"] = buys_df.at[record,"priceUSD"]
+    buys[timestamp]["valueUSD"] = buys_df.at[record,"valueUSD"]
+    buys[timestamp]["exchange"] = buys_df.at[record,"exchange"]
+    
+sells = {}
+for record in range(len(sells_df)):
+    timestamp = sells_df.at[record,"timestamp"]
+    sells[timestamp] = {}
+    sells[timestamp]["symbol"] = sells_df.at[record,"symbol"]
+    if sells_df.at[record,"qty"]  >= 0.00001: # qtys from Gemini API don't seem to tally at a certain level of precision...
+        sells[timestamp]["qty"] = round(sells_df.at[record,"qty"],5) # ...so just work at 5 decimals
+        sells[timestamp]["qty_left"] = round(sells_df.at[record,"qty"],5) # track qty to-be-realized
+        sells[timestamp]["buys"] = {} # dictionary to record matched sells' timestamps and qtys realized
+    elif sells_df.at[record,"qty"]  < 0.00001: # if qty is negligible...
+        sells[timestamp]["qty"] = sells_df.at[record,"qty"] # ...still record it so overall records still match up...
+        sells[timestamp]["qty_left"] = 0 # ...but don't bother realizing it...
+        sells[timestamp]["buys"] = {"negligible":sells_df.at[record,"qty"]} # ...and record as negligible
+    sells[timestamp]["profit"] = 0 # to record profit
+    sells[timestamp]["priceUSD"] = sells_df.at[record,"priceUSD"]
+    sells[timestamp]["valueUSD"] = sells_df.at[record,"valueUSD"]
+    sells[timestamp]["exchange"] = sells_df.at[record,"exchange"]
 
-# sort trades_df based on Buy or Sell
-for row in range(len(trades_df)):
-    if trades_df.at[row, "buysell"] == "Buy":
-        B_timestamps.append(trades_df.at[row,"timestamp"])
-        B_symbols.append(trades_df.at[row,"symbol"])
-        B_qtys.append(trades_df.at[row,"qty"])
-        B_pricesUSD.append(trades_df.at[row,"priceUSD"])
-        B_valuesUSD.append(trades_df.at[row,"valueUSD"])
-    elif trades_df.at[row, "buysell"] == "Sell":
-        S_timestamps.append(trades_df.at[row,"timestamp"])
-        S_symbols.append(trades_df.at[row,"symbol"])
-        S_qtys.append(trades_df.at[row,"qty"])
-        S_pricesUSD.append(trades_df.at[row,"priceUSD"])
-        S_valuesUSD.append(trades_df.at[row,"valueUSD"])
+#-----REALIZE SELL TRANSACTIONS-----#
 
-# sort all Sell lists based on lowest to highest S_pricesUSD, so that lowest S_pricesUSD is matched with buy transactions first
-S_pricesUSD, S_timestamps, S_symbols, S_qtys, S_valuesUSD = (list(info) for info in zip(*sorted(zip(S_pricesUSD, S_timestamps, S_symbols, S_qtys, S_valuesUSD))))
+for sell_timestamp, sell_info in sells.items():
+    sell_valuePERqty = sell_info["valueUSD"]/sell_info["qty"] # to calculate profit with buy_valuePERqty (below)
+    sell_profit = 0 # variable to record profit
+    
+    while sell_info["qty_left"] > 0: # generate "buylist" of eligible buy transactions to realize qty of sell transaction until all realized
+        print("""\n{} SELL of {} @ USD {}
+Qty Left: {}""".format(sell_timestamp, sell_info["symbol"], sell_info["priceUSD"], sell_info["qty_left"]))
+        print("""\nBUYLIST:
+ID |       TIMESTAMP      | PRICEUSD  | PROFIT  | IF QTY REALIZED""") # header of buys "hitlist", "NET_QTY (S-B)" column indicates if sell or buy transaction has more qty left (i.e. which qty to choose)
+        buylist = {} # create dictionary of buylist ID and timestamp for user to select ID, which is easier than selecting timestamp
+        buylist_id = 0
+        for buy_timestamp, buy_info in buys.items(): # print out hitlist of buy transactions that occurred before the sell transaction AND same symbol AND still has qty left
+            buy_valuePERqty = buys[buy_timestamp]["valueUSD"]/buys[buy_timestamp]["qty"] # to calculate profit with sell_valuePERqty (above)
+            
+            if buy_timestamp < sell_timestamp and sell_info["symbol"] == buy_info["symbol"] and buy_info["qty_left"] > 0 and (sell_info["qty_left"]-buy_info["qty_left"]) >= 0: # if buy qty_left can be fully realized, let user choose buy qty_left:
+                print("{}  |  {} |  {:.2f}  |  {}   | {}".format(buylist_id, buy_timestamp, round(buy_info["priceUSD"],2), round((sell_valuePERqty-buy_valuePERqty)*buy_info["qty_left"],2), buy_info["qty_left"])) # profit calculated by (difference in value/qty) * qty realized
+                buylist[buylist_id] = {}  # associate buy_timestamp and buy_info["qty_left"] with current buylist_id
+                buylist[buylist_id]["timestamp"] = buy_timestamp
+                buylist[buylist_id]["qty_left"] = buy_info["qty_left"]
+                buylist_id += 1 # prepare next buylist_id
+                
+            elif buy_timestamp < sell_timestamp and sell_info["symbol"] == buy_info["symbol"] and buy_info["qty_left"] > 0 and (sell_info["qty_left"]-buy_info["qty_left"]) < 0: # elif buy qty_left cannot be fully realized, let user choose sell qty_left
+                print("{}  |  {} |  {:.2f}  |  {}   | {} (maximum sell qty_left)".format(buylist_id, buy_timestamp, round(buy_info["priceUSD"],2), round((sell_valuePERqty-buy_valuePERqty)*buy_info["qty_left"],2), sell_info["qty_left"])) # profit calculated by (difference in value/qty) * qty realized
+                buylist[buylist_id] = {}  # associate buy_timestamp and sell_info["qty_left"] with current buylist_id
+                buylist[buylist_id]["timestamp"] = buy_timestamp
+                buylist[buylist_id]["qty_left"] = sell_info["qty_left"]
+                buylist_id += 1 # prepare next buylist_id
 
-#-----APPLY PROFIT-ONLY METHOD TO CREATE BULL.CSV-----#
+        # let user choose which ID and what qty to realize, with input validation
+        try:
+            chosen_id = int(input("\nInput ID of buy transaction and qty to be realized: "))
+            chosen_timestamp = buylist[chosen_id]["timestamp"]
+            chosen_qty = buylist[chosen_id]["qty_left"]
+        except ValueError: # let users reselect ID if they fail to input integer
+            print("\nERROR! Please input integer. Try again (:")
+            print("--------------------------------------------------------------")
+            continue
+        except KeyError: # let users reselect ID if they input wrong integer
+            print("\nERROR! Please input a correct ID. Try again (:")
+            print("--------------------------------------------------------------")
+            continue
+        if chosen_qty <= 0:
+            print("ERROR! Qty must be > 0. Try again (:") # let users reselect qty if chosen_qty <= 0
+            print("--------------------------------------------------------------")
+            continue
+        elif sell_info["qty_left"] - chosen_qty < 0: # let users reselect qty if it causes sell qty_left < 0
+            print("ERROR! Sell qty_left < 0. Try again (:")
+            print("--------------------------------------------------------------")
+            continue
+        elif buys[chosen_timestamp]["qty_left"] - chosen_qty < 0: # let users reselect qty if it causes sell qty_left < 0
+            print("ERROR! Buy qty_left < 0. Try again (:")
+            print("--------------------------------------------------------------")
+            continue
+        
+        print("--------------------------------------------------------------")
 
-for S_index in range(len(S_timestamps)):
-    for B_index in range(len(B_timestamps)): # if same symbol AND sell price higher than 75% buy price i.e. not severe loss (FLAWED CONDITION!!) AND sell still has qty AND buy still has qty
-        if S_symbols[S_index] == B_symbols[B_index] and S_pricesUSD[S_index] > (B_pricesUSD[B_index]*0.75) and S_qtys[S_index] != 0 and B_qtys[B_index] != 0:
-            S_qtys[S_index],B_qtys[B_index] = max(0, S_qtys[S_index] - B_qtys[B_index]),max(0, B_qtys[B_index] - S_qtys[S_index])
+        # realize qtys
+        sell_info["qty_left"] = sell_info["qty_left"] - chosen_qty
+        buys[chosen_timestamp]["qty_left"] = buys[chosen_timestamp]["qty_left"] - chosen_qty
 
-#-----CHECK DATA VALIDITY > CREATE BULL RECORDS-----#
-bull_timestamps = []
-bull_symbols = []
-bull_qtys = []
-bull_pricesUSD = []
-bull_valuesUSD = []
+        # record transactions used to realize
+        # if timestamp already exists in buys/sells dictionary, add qty instead of overwriting previous realized qty(s)
+        if chosen_timestamp not in sell_info["buys"]:
+            sell_info["buys"][chosen_timestamp] = chosen_qty
+        else:
+            sell_info["buys"][chosen_timestamp] += chosen_qty
+        
+        if sell_timestamp not in buys[chosen_timestamp]["sells"]:
+            buys[chosen_timestamp]["sells"][sell_timestamp] = chosen_qty
+        else:
+            buys[chosen_timestamp]["sells"][sell_timestamp] += chosen_qty
 
-# ensure all sell quantities = 0
-for index in range(len(S_timestamps)):
-    if S_qtys[index] > 0:
-        raise Exception("Sell quantity is not 0 for S_timestamp {}, qty {}.".format(S_timestamps[index],S_qtys[index]))
+        # record profit
+        # profit calculated by (difference in value/qty) * qty realized
+        profit = (sell_valuePERqty - (buys[chosen_timestamp]["valueUSD"]/buys[chosen_timestamp]["qty"])) * chosen_qty
+        buys[chosen_timestamp]["profit"] += profit
+        sell_profit += profit
+    
+    sell_info["profit"] = sell_profit
 
-for index in range(len(B_timestamps)):
-    if B_qtys[index] < 0: # ensure no negative Buy quantities
-        raise Exception("Buy quantity is negative for B_timestamp {}.".format(B_timestamps[index]))
-    elif B_qtys[index] > 0:
-        bull_timestamps.append(B_timestamps[index])
-        bull_symbols.append(B_symbols[index])
-        bull_qtys.append(B_qtys[index])
-        bull_pricesUSD.append(B_pricesUSD[index])
-        bull_valuesUSD.append(B_valuesUSD[index])
+#-----CREATE BUYS_REALIZED.CSV, BUYS_LEFT.CSV AND BULL_SELLS.CSV-----#
 
-#-----CREATE BULL_DICT, THEN CREATE BULL.CSV-----#
-bull_dict = {
-    "timestamp": bull_timestamps,
-    "symbol": bull_symbols,
-    "qty": bull_qtys,
-    "priceUSD": bull_pricesUSD,
-    "valueUSD": bull_valuesUSD
-}
+# write realized buys (i.e. qty_left = 0) into buys_realized.csv
+with open("buys_realized.csv", "w", newline="") as csvfile:
+    headers = ["timestamp","symbol", "qty", "qty_left", "priceUSD", "valueUSD", "exchange", "sells", "profit"] # get all headers per timestamp to iterate through
+    writer = csv.DictWriter(csvfile, headers)
+    writer.writeheader()
+    for buy_timestamp,buy_info in sorted(buys.items()):
+        if buy_info["qty_left"] == 0:
+            record = {"timestamp":buy_timestamp}
+            record.update(buy_info)
+            writer.writerow(record)
 
-bull_df = pd.DataFrame(bull_dict, columns = ["timestamp", "symbol", "qty", "priceUSD", "valueUSD"])
-csv_file = bull_df.to_csv("bull.csv", index=False)
-print("Generated bull.csv.")
+# write unrealized buys (i.e. qty_left > 0) into buys_left.csv
+with open("buys_left.csv", "w", newline="") as csvfile:
+    headers = ["timestamp","symbol", "qty", "qty_left", "priceUSD", "valueUSD", "exchange", "sells", "profit"] # get all headers per timestamp to iterate through
+    writer = csv.DictWriter(csvfile, headers)
+    writer.writeheader()
+    for buy_timestamp,buy_info in sorted(buys.items()):
+        if buy_info["qty_left"] > 0:
+            record = {"timestamp":buy_timestamp}
+            record.update(buy_info)
+            writer.writerow(record)
 
-#-----UPLOAD BULL.CSV TO GOOGLE CLOUD STORAGE-----#
+# write sells into sells.csv
+with open("sells.csv", "w", newline="") as csvfile:
+    headers = ["timestamp","symbol", "qty", "qty_left", "priceUSD", "valueUSD", "exchange", "buys", "profit"] # get all headers per timestamp to iterate through
+    writer = csv.DictWriter(csvfile, headers)
+    writer.writeheader()
+    for sell_timestamp,sell_info in sorted(sells.items()):
+        record = {"timestamp":sell_timestamp}
+        record.update(sell_info)
+        writer.writerow(record)
+
+#-----UPLOAD BUYS_REALIZED.CSV, BUYS_LEFT.CSV AND SELLS.CSV TO GOOGLE CLOUD STORAGE-----#
 # run on Google Compute Engine VM instance with dependency installed using "pip3 install --upgrade google-cloud-storage"
 
 storage_client = storage.Client()
 bucket = storage_client.bucket("bullsheet")
-blob = bucket.blob("bull.csv")
-blob.upload_from_filename("/home/arthur95chionh/bull.csv")
+blob = bucket.blob("buys_realized.csv")
+blob.upload_from_filename("/home/arthur95chionh/buys_realized.csv")
 
-print("Uploaded bull.csv to Cloud Storage bucket 'bullsheet'.")
+blob = bucket.blob("buys_left.csv")
+blob.upload_from_filename("/home/arthur95chionh/buys_left.csv")
 
-"""# Explicitly create a credentials object. This allows you to use the same
-# credentials for both the BigQuery and BigQuery Storage clients, avoiding
-# unnecessary API calls to fetch duplicate authentication tokens.
-credentials, your_project_id = google.auth.default(
-    scopes=["https://www.googleapis.com/auth/cloud-platform"]
-)
+blob = bucket.blob("sells.csv")
+blob.upload_from_filename("/home/arthur95chionh/sells.csv")
+print("Uploaded buys_realized.csv, buys_left.csv and sells.csv to Cloud Storage bucket 'bullsheet'.")
 
-# Make clients.
-bqclient = bigquery.Client(credentials=credentials, project=your_project_id,)
-bqstorageclient = bigquery_storage.BigQueryReadClient(credentials=credentials)"""
+#-----CREATE AND UPLOAD TRIGGER.TXT TO GOOGLE CLOUD STORAGE-----#
+# triggers Cloud Function which uploads CSVs to BigQuery
 
-# Download query results.
-#query_string = """
-#SELECT *
-#FROM `complete-axis-313516.Bullsheet.bull`
-#ORDER BY timestamp DESC
-#"""
+trigger = open("trigger.txt", "w")
+trigger.write("""This file is created and uploaded to Cloud Storage bucket bullsheet_trigger_cloudfunction.
+Uploading this file triggers Cloud Function update_bigquery_bullsheet, 
+which uploads CSVs in Cloud Storage bucket bullsheet to respective tables in BigQuery database Bullsheet.""")
+trigger.close()
 
-"""bull = (
-    bqclient.query(query_string)
-    .result()
-    .to_dataframe(bqstorage_client=bqstorageclient)
-)"""
+storage_client = storage.Client()
+bucket = storage_client.bucket("bullsheet_trigger_cloudfunction")
+blob = bucket.blob("trigger.txt")
+blob.upload_from_filename("/home/arthur95chionh/trigger.txt")
+print("Uploaded tigger.txt to Cloud Storage bucket 'bullsheet_trigger_cloudfunction'. Tables in BigQuery database 'Bullsheet' successfully updated.")
+
+#-----REFERENCE: QUERY BIGQUERY-----#
+# """# Explicitly create a credentials object. This allows you to use the same
+# # credentials for both the BigQuery and BigQuery Storage clients, avoiding
+# # unnecessary API calls to fetch duplicate authentication tokens.
+# credentials, your_project_id = google.auth.default(
+#     scopes=["https://www.googleapis.com/auth/cloud-platform"]
+# )
+
+# # Make clients.
+# bqclient = bigquery.Client(credentials=credentials, project=your_project_id,)
+# bqstorageclient = bigquery_storage.BigQueryReadClient(credentials=credentials)"""
+
+# # Download query results.
+# #query_string = """
+# #SELECT *
+# #FROM `complete-axis-313516.Bullsheet.bull`
+# #ORDER BY timestamp DESC
+# #"""
+
+# """bull = (
+#     bqclient.query(query_string)
+#     .result()
+#     .to_dataframe(bqstorage_client=bqstorageclient)
+# )"""
+
+#-----REFERENCE: AGGREGATE TRADES-----#
+# aggregate individual trades in same order i.e. sum qty, sum valueSGD, sum valueUSD, everything else same/first
+# aggregations = {"timestamp":"first", "buysell": "first", "symbol":"first", "fiat":"first", "qty":"sum", "fee_rate":"first", "priceSGD":"first", "valueSGD": "sum", "valueUSD":"sum", "exchange":"first"}
+# trades_df = trades_df.groupby("priceUSD", as_index=False).aggregate(aggregations) # as_index=False prevents priceUSD from becoming index
+# print("Aggregated {} individual trades with same priceUSD.".format(len(timestamps)-len(trades_df)))
+# print(trades_df)
