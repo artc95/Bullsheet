@@ -1,0 +1,5 @@
+SELECT *
+FROM Bullsheet.buys_realized
+UNION ALL
+SELECT *
+FROM Bullsheet.buys_left

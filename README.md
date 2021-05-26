@@ -1,8 +1,19 @@
-<h1>Python on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Functions, BigQuery), Google Data Studio</h1><br/>
-- Live at https://datastudio.google.com/reporting/43c0182a-33b4-42ab-823d-3515366f6e90<br/>
-- With reference to "How to automate financial data collection with Python using APIs and Google Cloud https://towardsdatascience.com/how-to-automate-financial-data-collection-with-python-using-tiingo-api-and-google-cloud-platform-b11d8c9afaa1"<br/>
-- DAG: <br/>
-<img src="https://github.com/artc95/Bullsheet/blob/master/Bullsheet_DAG.PNG?raw=true" width="50%" height="50%"><br/>
+***TLDR*** (summary of ***PROBLEM***): Approaching cryptocurrency investment **per transaction** may be more lucrative than using **average**. **Bullsheet** automates and simplifies **per transaction** management of cryptocurrency investment. 
+
+***PROBLEM:***<br>
+Traditionally, investments are calculated using **average** prices and are not managed/realized **per transaction**.<br>
+However, an **average** approach might not be as effective for cryptocurrency investment. Because cryptocurrency is highly volatile, the **average** approach may present psychological barriers. A scenario - you buy 1 Bitcoin (BTC) at USD 50000. It drops to USD 40000, and you buy 1 more. Your average buy price is between USD 45000, but BTC drops further to USD 30000. Psychological barriers include:
+1. **BIG DIP** - The current price is way below your **average** price, so you may be psychologically paralyzed from "buying the dip" or psychologically pressured to sell at a loss, only to regret/FOMO when it bounces back up. HOWEVER, a **per transaction** approach may help you temporarily ignore your previous purchases, and perceive the current dip as new territory to invest in.
+2. **BOUNCING BEAR** - You may "buy the dip" and buy 1 BTC at USD 30000. Now your average price is USD 40000. But BTC moves sideways over time, hovering between USD 30000 and USD 35000, never reaching USD 40000. During this sideway movement, you may be psychologically paralyzed from selling at USD 35000 and buying back at USD 30000 because it's all below your **average price** of USD 40000. HOWEVER, a **per transaction** approach may help you focus on "riding the waves" of BTC's bounce. Selling at USD 35000 and buying back at USD 30000 may not produce great profits, but is USD 0.01 profit insignificant?
+
+***SOLUTION:***
+
+<h1>BULLSHEET</h1><br/>
+Python, SQL on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Functions, BigQuery) and Google Data Studio
+- Live at https://datastudio.google.com/reporting/43c0182a-33b4-42ab-823d-3515366f6e90<br>
+- Reference: "How to automate financial data collection with Python using APIs and Google Cloud https://towardsdatascience.com/how-to-automate-financial-data-collection-with-python-using-tiingo-api-and-google-cloud-platform-b11d8c9afaa1"<br>
+- DAG: <br>
+<img src="https://github.com/artc95/Bullsheet/blob/master/Bullsheet_DAG.PNG?raw=true" width="70%" height="70%"><br/>
 
 <h2>Create VM Instance in Compute Engine</h2>
 - Create VM instance, for Free Tier (https://cloud.google.com/free/docs/gcp-free-tier/#compute) use:<br/>
@@ -20,19 +31,30 @@
 
 <h2>Create Cloud Function to update BigQuery table with new file written in Cloud Storage Bucket</h2>
 - Loading csv data from Cloud Storage into BigQuery https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv<br/>
-- Add requirements.txt file with necessary dependencies e.g. google-cloud-bigquery==2.16.1<br/>
-  ------------------------------------------
+- Add requirements.txt file with necessary dependencies e.g. google-cloud-bigquery==2.16.1<br>
 
-<h1>Python Dash App on Heroku<h1>
-<h2>Write simple Dash app</h2>
+**To Be Developed:**<br>
+1. Show BUYLIST DESCENDING PRICEUSD
+- BEAUTIFY CODE E.G. DEF FUNCTIONS
+- OWNERSHIP
+- INTEGRATE WITH OTHER EXCHANGES BESIDES GEMINI
+- TRADEVIEW INTEGRATION
+- CALCULATOR
+- CLOUD PUB/SUB / APP ENGINE FOR BETTER ACTIVATION AND USER INTERFACE (gmail pub/sub to compute engine or cloud functions? https://developers.google.com/gmail/api/guides/push
+https://anderfernandez.com/en/blog/automate-python-script-google-cloud/)
+
+**---------------------End of Bullsheet---------------------**
+<br>
+<br>
+**Legacy - Python Dash App on Heroku**<br>
+Write simple Dash app<br>
 - tutorial at https://dash.plotly.com/installation
 
-<h2>Deploy Dash app using Heroku</h2>
-
+Deploy Dash app using Heroku
 - tutorial at https://devcenter.heroku.com/articles/getting-started-with-python  
 - samples of necessary files (e.g. Procfile, requirements.txt, runtime.txt) https://github.com/austinlasseter/flying-dog-beers (tutorial at https://austinlasseter.medium.com/deploy-a-plotly-dash-app-on-heroku-4d2c3224230)  
 - explanation of process https://towardsdatascience.com/deploying-your-dash-app-to-heroku-the-magical-guide-39bd6a0c586c
 - app.py must have the line "server = app.server" !!!!!
 
-<h2>TBC: Deploy Dash app using Google App Engine</h2>
+TBC: Deploy Dash app using Google App Engine
 https://realpython.com/python-web-applications/
