@@ -46,7 +46,7 @@ Python, SQL on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Funct
 5. Integrate with Tradeview for updated market prices<br>
 6. Build-in calculator in dashboard for better decision-making e.g. calculate required breakeven priceUSD<br>
 7. Develop Cloud Pub/Sub and App Engine functionalities for seamless bull.py activation and user interface<br>(gmail pub/sub to compute engine or cloud functions: https://developers.google.com/gmail/api/guides/push ; https://anderfernandez.com/en/blog/automate-python-script-google-cloud/)<br>
-8. pep8 python practices
+8. pep8 python practices, Docker, Spark
 
 **---------------------End of Bullsheet---------------------**
 <br>
