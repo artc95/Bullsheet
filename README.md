@@ -1,4 +1,4 @@
-**TLDR**<br>
+# TLDR<br>
 ***PROBLEM***: Approaching cryptocurrency investment **per transaction** may be more lucrative than using **average**.<br>
 ***SOLUTION***: **Bullsheet** automates and simplifies **per transaction** management of cryptocurrency investment.<br>
 
