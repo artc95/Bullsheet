@@ -1,7 +1,8 @@
 ***PROBLEM:***<br>
-Traditionally, investments are calculated using **average** prices and are not managed or realized **per transaction**.<br>
-However, an **average** approach might not be as effective for cryptocurrency investment. Cryptocurrency is highly volatile. The **average** approach may present psychological barriers. 2 key examples:<br>
-
+Traditionally, investments are calculated using **average** prices and are not managed/realized **per transaction**.<br>
+However, an **average** approach might not be as effective for cryptocurrency investment. Because cryptocurrency is highly volatile, the **average** approach may present psychological barriers. A scenario - you buy 1 Bitcoin (BTC) at USD 50000. It drops to USD 40000, and you buy 1 more. Your average buy price is between USD 45000, but BTC drops further to USD 30000. Psychological barriers include:
+1. **BIG DIP** - The current price is way below your average price, so you may be psychologically paralyzed from "buying the dip" or psychologically pressured to sell at a loss, only to regret/FOMO when it bounces back up.
+2. **BOUNCING BEAR** - You may "buy the dip" and buy 1 BTC at USD 30000. Now your average price is USD 40000. But BTC moves sideways over time, hovering between USD 30000 and USD 35000, never reaching USD 40000. During this sideway movement, you may be psychologically paralyzed from selling at USD 35000 and buying back at USD 30000 because it's all below your average price of USD 40000. 
 
 <h1>Python on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Functions, BigQuery), Google Data Studio</h1><br/>
 - Live at https://datastudio.google.com/reporting/43c0182a-33b4-42ab-823d-3515366f6e90<br/>
