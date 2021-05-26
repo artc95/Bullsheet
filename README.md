@@ -1,4 +1,4 @@
-***TLDR*** (summary of ***PROBLEM***): Approaching cryptocurrency investment **per transaction** may be more lucrative than using **average**. **Bullsheet** seeks to automate and simplify **per transaction** management of cryptocurrency investment. 
+***TLDR*** (summary of ***PROBLEM***): Approaching cryptocurrency investment **per transaction** may be more lucrative than using **average**. **Bullsheet** automates and simplifies **per transaction** management of cryptocurrency investment. 
 
 ***PROBLEM:***<br>
 Traditionally, investments are calculated using **average** prices and are not managed/realized **per transaction**.<br>
@@ -10,10 +10,10 @@ However, an **average** approach might not be as effective for cryptocurrency in
 
 <h1>BULLSHEET</h1><br/>
 Python, SQL on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Functions, BigQuery) and Google Data Studio
-- Live at https://datastudio.google.com/reporting/43c0182a-33b4-42ab-823d-3515366f6e90<br/>
-- With reference to "How to automate financial data collection with Python using APIs and Google Cloud https://towardsdatascience.com/how-to-automate-financial-data-collection-with-python-using-tiingo-api-and-google-cloud-platform-b11d8c9afaa1"<br/>
-- DAG: <br/>
-<img src="https://github.com/artc95/Bullsheet/blob/master/Bullsheet_DAG.PNG?raw=true" width="50%" height="50%"><br/>
+- Live at https://datastudio.google.com/reporting/43c0182a-33b4-42ab-823d-3515366f6e90<br>
+- Reference: "How to automate financial data collection with Python using APIs and Google Cloud https://towardsdatascience.com/how-to-automate-financial-data-collection-with-python-using-tiingo-api-and-google-cloud-platform-b11d8c9afaa1"<br>
+- DAG: <br>
+<img src="https://github.com/artc95/Bullsheet/blob/master/Bullsheet_DAG.PNG?raw=true" width="70%" height="70%"><br/>
 
 <h2>Create VM Instance in Compute Engine</h2>
 - Create VM instance, for Free Tier (https://cloud.google.com/free/docs/gcp-free-tier/#compute) use:<br/>
