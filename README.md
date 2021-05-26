@@ -33,7 +33,7 @@ Python, SQL on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Funct
 - Loading csv data from Cloud Storage into BigQuery https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv<br/>
 - Add requirements.txt file with necessary dependencies e.g. google-cloud-bigquery==2.16.1<br>
 
-<h1>End of Bullsheet</h1>
+**End of Bullsheet**
 <br>
 <br>
 **Legacy - Python Dash App on Heroku**<br>
