@@ -1,4 +1,4 @@
-***TLDR***(summary of PROBLEM): Approaching cryptocurrency investment **per transaction** may be more lucrative than using **average**. **Bullsheet** seeks to automate and simplify **per transaction** management of cryptocurrency investment. 
+***TLDR*** (summary of PROBLEM): Approaching cryptocurrency investment **per transaction** may be more lucrative than using **average**. **Bullsheet** seeks to automate and simplify **per transaction** management of cryptocurrency investment. 
 
 ***PROBLEM:***<br>
 Traditionally, investments are calculated using **average** prices and are not managed/realized **per transaction**.<br>
