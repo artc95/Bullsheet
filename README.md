@@ -11,7 +11,7 @@ However, an **average** approach might not be as effective for cryptocurrency in
 ***SOLUTION:***
 
 <h1>BULLSHEET</h1><br/>
-Python, SQL on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Functions, BigQuery) and Google Data Studio
+Python, SQL on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Functions, BigQuery) and Google Data Studio<br>
 - Live at https://datastudio.google.com/reporting/43c0182a-33b4-42ab-823d-3515366f6e90<br>
 - Reference: "How to automate financial data collection with Python using APIs and Google Cloud https://towardsdatascience.com/how-to-automate-financial-data-collection-with-python-using-tiingo-api-and-google-cloud-platform-b11d8c9afaa1"<br>
 - DAG: <br>
