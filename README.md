@@ -1,6 +1,7 @@
-<h1>PROBLEM:</h1><br/>
-Traditionally, profits from investments are calculated using **average** prices. Investments are not managed or realized on a per transaction basis.<br>
-However, this Cryptocurrency is highly volatile. 
+***PROBLEM:***<br>
+Traditionally, investments are calculated using **average** prices and are not managed or realized **per transaction**.<br>
+However, an **average** approach might not be as effective for cryptocurrency investment. Cryptocurrency is highly volatile. The **average** approach may present psychological barriers. 2 key examples:<br>
+
 
 <h1>Python on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Functions, BigQuery), Google Data Studio</h1><br/>
 - Live at https://datastudio.google.com/reporting/43c0182a-33b4-42ab-823d-3515366f6e90<br/>
