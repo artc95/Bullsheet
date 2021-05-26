@@ -38,10 +38,10 @@ trades_exists = os.path.exists("trades.csv") # https://www.guru99.com/python-che
 if trades_exists == True: # if exists, get timestamp of latest trade, then query subsequent trades and append
     existing = pd.read_csv("trades.csv")
     timestamp = existing.loc[len(existing)-1,"timestamp"]
-    timestamp = datetime.datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S").timestamp() + 1 # add one second to timestamp to search for trades after and excluding last trade queried
-else: # if does not exist, query from timestamp when Gemini introduced in Singapore https://medium.com/@winklevoss/gemini-is-expanding-to-hong-kong-and-singapore-42d8b973c433
-    timestamp = datetime.datetime.strptime("2016-10-02 00:00:00", "%Y-%m-%d %H:%M:%S").timestamp()
-print("Querying trades from {} onwards.".format(datetime.datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")))
+    timestamp = (datetime.datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f").timestamp()*1000) + 1 # multiply by 1000 as Gemini API accepts microseconds as whole number, then add one microsecond to timestamp to search for trades after and excluding last trade queried
+else: # if does not exist, query from timestamp of first trade on Gemini https://docs.gemini.com/rest-api/#timestamps
+    timestamp = 1444311607800
+print("Querying trades from {} onwards.".format(datetime.datetime.fromtimestamp(timestamp/1000).strftime("%Y-%m-%d %H:%M:%S.%f"))) # fromtimestamp() can only take up to seconds as whole number, microseconds must be decimals
 
 # PAYLOAD - build dict object
 payload = {
@@ -97,7 +97,7 @@ valuesUSD = []
 exchanges = []
 
 for trade in trades_df: # parse json
-    timestamps.append(datetime.datetime.fromtimestamp(trade["timestamp"]).strftime("%Y-%m-%d %H:%M:%S")) # BigQuery needs timestamp in "%Y-%m-%d %H:%M:%S" format https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv
+    timestamps.append(datetime.datetime.fromtimestamp(trade["timestampms"]/1000).strftime("%Y-%m-%d %H:%M:%S.%f")) # BigQuery needs timestamp in "%Y-%m-%d %H:%M:%S" format https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv
     buysell.append(trade["type"])
     symbols.append(trade["symbol"][:-3]) # e.g. LINKUSD, where before last 3 alphabets are symbol, last 3 alphabets are fiat 
     fiats.append(trade["symbol"][-3:])
@@ -158,7 +158,7 @@ trades_df = pd.DataFrame(trades_dict, columns = ["timestamp", "buysell", "symbol
 trades_df = trades_df.iloc[::-1].reset_index(drop=True) # reverse order in trades_df such that earliest trade is first
 if len(trades_df) > 0: # if trades_df is not empty
     csv_file = trades_df.to_csv("trades.csv", index=False)
-    print("Parsed {} trades from {} to {}. trades.csv created.".format(len(trades_df), timestamps[len(trades_df)-1], timestamps[0]))
+    print("Parsed {} trades from {} to {}. \ntrades.csv created.".format(len(trades_df), timestamps[len(trades_df)-1], timestamps[0]))
 
 elif len(trades_df) == 0: # if trades_df empty
     print("No trades were parsed.")
@@ -171,7 +171,7 @@ bucket = storage_client.bucket("bullsheet")
 blob = bucket.blob("trades.csv")
 blob.upload_from_filename("/home/arthur95chionh/trades.csv")
 
-print("Uploaded trades.csv to Cloud Storage bucket 'bullsheet'.")
+print("Uploaded trades.csv containing {} records to Cloud Storage bucket 'bullsheet'.".format(len(trades_df)))
 
 # # ********** PROCEED FROM TRADES TO BULL **********
 wait = 3
@@ -189,7 +189,7 @@ print("Processing trades_df with latest buys_left.csv.")
 
 # PREPARE TRADES_DF
 trades_df = pd.read_csv("trades.csv")
-#trades_df = trades_df.iloc[20:]
+#trades_df = trades_df.iloc[:15]
 
 # trades_df contains both buy and sell transactions, has unnecessary columns like fiat/priceSGD etc., sorts transactions by descending timestamp, and has indices based on total transactions
 # SO filter trades_df based on column "buysell", select certain columns only, sort by ascending timestamp, reset and drop index to iterate
@@ -209,7 +209,6 @@ else: # if buys_left_df is not appended to buys_df, buys_df will not have "qty_l
 # qtys from Gemini API are floats that could be fractions without exact decimal precision, so use Decimal class to have exact decimal precision for calculations
 #decimal.getcontext().prec = 5 # set decimal class precision at 5 decimal places
 #decimal.getcontext().rounding = decimal.ROUND_DOWN
-print(decimal.getcontext())
 
 buys = {}
 for record in range(len(buys_df)):
@@ -263,7 +262,7 @@ for sell_timestamp, sell_info in sells.items(): # use Decimal class to have exac
         print("""\n{} SELL of {} @ USD {}
 Qty Left: {}""".format(sell_timestamp, sell_info["symbol"], sell_info["priceUSD"], sell_info["qty_left"]))
         print("""\nBUYLIST:
-ID  |       TIMESTAMP      | PRICEUSD  | PROFIT  | IF QTY REALIZED""") # header of buys "hitlist", "NET_QTY (S-B)" column indicates if sell or buy transaction has more qty left (i.e. which qty to choose)
+ID  |          TIMESTAMP          | PRICEUSD  | PROFIT  | IF QTY REALIZED""") # header of buys "hitlist", "NET_QTY (S-B)" column indicates if sell or buy transaction has more qty left (i.e. which qty to choose)
         buylist = {} # create dictionary of buylist ID and timestamp for user to select ID, which is easier than selecting timestamp
         buylist_id = 0
         for buy_timestamp, buy_info in buys.items(): # print out hitlist of buy transactions that occurred before the sell transaction AND same symbol AND still has qty left
