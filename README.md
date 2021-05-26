@@ -1,3 +1,7 @@
+<h1>PROBLEM:</h1><br/>
+Traditionally, profits from investments are calculated using **average** prices. Investments are not managed or realized on a per transaction basis.<br>
+However, this Cryptocurrency is highly volatile. 
+
 <h1>Python on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Functions, BigQuery), Google Data Studio</h1><br/>
 - Live at https://datastudio.google.com/reporting/43c0182a-33b4-42ab-823d-3515366f6e90<br/>
 - With reference to "How to automate financial data collection with Python using APIs and Google Cloud https://towardsdatascience.com/how-to-automate-financial-data-collection-with-python-using-tiingo-api-and-google-cloud-platform-b11d8c9afaa1"<br/>
