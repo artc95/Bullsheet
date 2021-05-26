@@ -316,15 +316,15 @@ ID  |          TIMESTAMP          | PRICEUSD  | PROFIT  | IF QTY REALIZED""") # 
 
         # record transactions used to realize
         # if timestamp already exists in buys/sells dictionary, add qty instead of overwriting previous realized qty(s)
-        if chosen_timestamp not in sell_info["buys"]:
-            sell_info["buys"][chosen_timestamp] = Decimal(str(chosen_qty))
+        if chosen_timestamp not in sell_info["buys"]: # add qtys as floats so that dictionaries can be parsed using ast.literal_eval method
+            sell_info["buys"][chosen_timestamp] = float(chosen_qty)
         else:
-            sell_info["buys"][chosen_timestamp] += Decimal(str(chosen_qty))
+            sell_info["buys"][chosen_timestamp] += float(chosen_qty)
         
         if sell_timestamp not in buys[chosen_timestamp]["sells"]:
-            buys[chosen_timestamp]["sells"][sell_timestamp] = Decimal(str(chosen_qty))
+            buys[chosen_timestamp]["sells"][sell_timestamp] = float(chosen_qty)
         else:
-            buys[chosen_timestamp]["sells"][sell_timestamp] += Decimal(str(chosen_qty))
+            buys[chosen_timestamp]["sells"][sell_timestamp] += float(chosen_qty)
 
         # record profit
         # profit calculated by (difference in value/qty) * qty realized
