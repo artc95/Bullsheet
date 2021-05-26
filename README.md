@@ -1,4 +1,6 @@
-***TLDR*** (summary of ***PROBLEM***): Approaching cryptocurrency investment **per transaction** may be more lucrative than using **average**. **Bullsheet** automates and simplifies **per transaction** management of cryptocurrency investment. 
+<h1>TLDR</h1> 
+Summary of ***PROBLEM***: Approaching cryptocurrency investment **per transaction** may be more lucrative than using **average**.<br>
+***Solution***: **Bullsheet** automates and simplifies **per transaction** management of cryptocurrency investment. 
 
 ***PROBLEM:***<br>
 Traditionally, investments are calculated using **average** prices and are not managed/realized **per transaction**.<br>
@@ -13,7 +15,9 @@ Python, SQL on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Funct
 - Live at https://datastudio.google.com/reporting/43c0182a-33b4-42ab-823d-3515366f6e90<br>
 - Reference: "How to automate financial data collection with Python using APIs and Google Cloud https://towardsdatascience.com/how-to-automate-financial-data-collection-with-python-using-tiingo-api-and-google-cloud-platform-b11d8c9afaa1"<br>
 - DAG: <br>
-<img src="https://github.com/artc95/Bullsheet/blob/master/Bullsheet_DAG.PNG?raw=true" width="70%" height="70%"><br/>
+<img src="https://github.com/artc95/Bullsheet/blob/master/Bullsheet_DAG.PNG?raw=true" width="70%" height="70%"><br>
+- Compute Engine User Interface: <br>
+<img src="https://github.com/artc95/Bullsheet/blob/master/bull_py.PNG?raw=true" width="70%" height="70%"><br>
 
 <h2>Create VM Instance in Compute Engine</h2>
 - Create VM instance, for Free Tier (https://cloud.google.com/free/docs/gcp-free-tier/#compute) use:<br/>
@@ -34,14 +38,13 @@ Python, SQL on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Funct
 - Add requirements.txt file with necessary dependencies e.g. google-cloud-bigquery==2.16.1<br>
 
 **To Be Developed:**<br>
-1. Show BUYLIST DESCENDING PRICEUSD
-- BEAUTIFY CODE E.G. DEF FUNCTIONS
-- OWNERSHIP
-- INTEGRATE WITH OTHER EXCHANGES BESIDES GEMINI
-- TRADEVIEW INTEGRATION
-- CALCULATOR
-- CLOUD PUB/SUB / APP ENGINE FOR BETTER ACTIVATION AND USER INTERFACE (gmail pub/sub to compute engine or cloud functions? https://developers.google.com/gmail/api/guides/push
-https://anderfernandez.com/en/blog/automate-python-script-google-cloud/)
+1. Show buylist sorted by priceUSD descending<br>
+2. Tidy up code e.g. def functions<br>
+3. Build dashboards based on ownership<br>
+4. Integrate with other exchanges besides Gemini (e.g. binancesg)<br>
+5. Integrate with Tradeview for updated market prices<br>
+6. Build-in calculator in dashboard for better decision-making e.g. calculate required breakeven priceUSD<br>
+7. Develop Cloud Pub/Sub and App Engine functionalities for seamless bull.py activation and user interface<br>(gmail pub/sub to compute engine or cloud functions: https://developers.google.com/gmail/api/guides/push ; https://anderfernandez.com/en/blog/automate-python-script-google-cloud/)<br>
 
 **---------------------End of Bullsheet---------------------**
 <br>
