@@ -37,6 +37,7 @@ Python, SQL on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Funct
 - Loading csv data from Cloud Storage into BigQuery https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv<br/>
 - Add requirements.txt file with necessary dependencies e.g. google-cloud-bigquery==2.16.1<br>
 <br>
+
 **To Be Developed:**<br>
 1. Show buylist sorted by priceUSD descending<br>
 2. Tidy up code e.g. def functions<br>
