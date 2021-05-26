@@ -32,18 +32,16 @@ Python, SQL on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Funct
 <h2>Create Cloud Function to update BigQuery table with new file written in Cloud Storage Bucket</h2>
 - Loading csv data from Cloud Storage into BigQuery https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv<br/>
 - Add requirements.txt file with necessary dependencies e.g. google-cloud-bigquery==2.16.1<br/>
-  ------------------------------------------
 
-<h1>Python Dash App on Heroku<h1>
-<h2>Write simple Dash app</h2>
+**Legacy - Python Dash App on Heroku**<br>
+Write simple Dash app<br>
 - tutorial at https://dash.plotly.com/installation
 
-<h2>Deploy Dash app using Heroku</h2>
-
+Deploy Dash app using Heroku
 - tutorial at https://devcenter.heroku.com/articles/getting-started-with-python  
 - samples of necessary files (e.g. Procfile, requirements.txt, runtime.txt) https://github.com/austinlasseter/flying-dog-beers (tutorial at https://austinlasseter.medium.com/deploy-a-plotly-dash-app-on-heroku-4d2c3224230)  
 - explanation of process https://towardsdatascience.com/deploying-your-dash-app-to-heroku-the-magical-guide-39bd6a0c586c
 - app.py must have the line "server = app.server" !!!!!
 
-<h2>TBC: Deploy Dash app using Google App Engine</h2>
+TBC: Deploy Dash app using Google App Engine
 https://realpython.com/python-web-applications/
