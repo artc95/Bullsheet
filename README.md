@@ -4,7 +4,7 @@
 Traditionally, investments are calculated using **average** prices and are not managed/realized **per transaction**.<br>
 However, an **average** approach might not be as effective for cryptocurrency investment. Because cryptocurrency is highly volatile, the **average** approach may present psychological barriers. A scenario - you buy 1 Bitcoin (BTC) at USD 50000. It drops to USD 40000, and you buy 1 more. Your average buy price is between USD 45000, but BTC drops further to USD 30000. Psychological barriers include:
 1. **BIG DIP** - The current price is way below your **average** price, so you may be psychologically paralyzed from "buying the dip" or psychologically pressured to sell at a loss, only to regret/FOMO when it bounces back up. HOWEVER, a **per transaction** approach may help you temporarily ignore your previous purchases, and perceive the current dip as new territory to invest in.
-2. **BOUNCING BEAR** - You may "buy the dip" and buy 1 BTC at USD 30000. Now your average price is USD 40000. But BTC moves sideways over time, hovering between USD 30000 and USD 35000, never reaching USD 40000. During this sideway movement, you may be psychologically paralyzed from selling at USD 35000 and buying back at USD 30000 because it's all below your average price of USD 40000. HOWEVER, a **per transaction** approach may help you focus on "riding the waves" of BTC's bounce. Selling at USD 35000 and buying back at USD 30000 may not produce great profits, but is USD 0.01 profit insignificant?
+2. **BOUNCING BEAR** - You may "buy the dip" and buy 1 BTC at USD 30000. Now your average price is USD 40000. But BTC moves sideways over time, hovering between USD 30000 and USD 35000, never reaching USD 40000. During this sideway movement, you may be psychologically paralyzed from selling at USD 35000 and buying back at USD 30000 because it's all below your **average price** of USD 40000. HOWEVER, a **per transaction** approach may help you focus on "riding the waves" of BTC's bounce. Selling at USD 35000 and buying back at USD 30000 may not produce great profits, but is USD 0.01 profit insignificant?
 
 ***SOLUTION:***
 
@@ -32,6 +32,16 @@ Python, SQL on Google Cloud Platform (Compute Engine, Cloud Storage, Cloud Funct
 <h2>Create Cloud Function to update BigQuery table with new file written in Cloud Storage Bucket</h2>
 - Loading csv data from Cloud Storage into BigQuery https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv<br/>
 - Add requirements.txt file with necessary dependencies e.g. google-cloud-bigquery==2.16.1<br>
+
+**To Be Developed:**<br>
+1. Show BUYLIST DESCENDING PRICEUSD
+- BEAUTIFY CODE E.G. DEF FUNCTIONS
+- OWNERSHIP
+- INTEGRATE WITH OTHER EXCHANGES BESIDES GEMINI
+- TRADEVIEW INTEGRATION
+- CALCULATOR
+- CLOUD PUB/SUB / APP ENGINE FOR BETTER ACTIVATION AND USER INTERFACE (gmail pub/sub to compute engine or cloud functions? https://developers.google.com/gmail/api/guides/push
+https://anderfernandez.com/en/blog/automate-python-script-google-cloud/)
 
 **---------------------End of Bullsheet---------------------**
 <br>
