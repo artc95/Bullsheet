@@ -329,8 +329,8 @@ ID  |          TIMESTAMP          | PRICEUSD  | PROFIT  | IF QTY REALIZED""") # 
         # record profit
         # profit calculated by (difference in value/qty) * qty realized
         profit = (sell_valuePERqty - (buys[chosen_timestamp]["valueUSD"]/buys[chosen_timestamp]["qty"])) * chosen_qty
-        buys[chosen_timestamp]["profit"] += profit
-        sell_profit += profit
+        buys[chosen_timestamp]["profit"] += float(profit)
+        sell_profit += float(profit)
     
     sell_info["profit"] = sell_profit
 
